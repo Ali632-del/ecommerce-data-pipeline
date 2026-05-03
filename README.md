@@ -1,188 +1,211 @@
-# E-Commerce Data Pipeline — Portfolio Project
+# 🚀 Real-Time E-Commerce Data Pipeline & Analytics System
 
-A production-grade, end-to-end data engineering pipeline built on an
-Indian e-commerce product dataset (1,000 SKUs, 24 columns, 97 categories).
+<div align="center">
 
----
+![Python](https://img.shields.io/badge/Python-3.14-blue?style=for-the-badge&logo=python)
+![Pandas](https://img.shields.io/badge/Pandas-2.2-150458?style=for-the-badge&logo=pandas)
+![SQLite](https://img.shields.io/badge/SQLite-Data_Warehouse-003B57?style=for-the-badge&logo=sqlite)
+![Airflow](https://img.shields.io/badge/Apache_Airflow-Orchestration-017CEE?style=for-the-badge&logo=apacheairflow)
+![Jupyter](https://img.shields.io/badge/Jupyter-Analytics-F37626?style=for-the-badge&logo=jupyter)
 
-## Architecture
+**A production-grade, end-to-end data engineering portfolio project**  
+*Built by [Ali Hamdy Rizq](https://github.com/Ali632-del)*
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                        DATA SOURCES                                 │
-│   CSV dataset  ──►  producer.py (batch simulator)                   │
-│                      │   (optional: → Kafka topic → consumer.py)   │
-└──────────────────────┼──────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                     RAW DATA LAKE  (immutable)                      │
-│   data/raw/<YYYY>/<MM>/<DD>/<HH>/batch_NNNN.parquet                │
-│   • Partitioned by ingest hour                                      │
-│   • Never overwritten — append-only                                 │
-└──────────────────────┼──────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                   PROCESSING LAYER  (transform.py)                  │
-│   1. Schema enforcement & type casting                              │
-│   2. Price cleaning  (₹3,995.00 → 3995.00 float)                  │
-│   3. Missing-value strategy  (median / constant fills)             │
-│   4. Feature engineering                                            │
-│      • discount_amount  • price_bucket  • ratings_tier             │
-│      • has_seller       • rating_x_count (popularity score)        │
-│   5. Deduplication by product_id                                    │
-│   6. Range validation                                               │
-│                                                                     │
-│   Output → data/processed/products_cleaned.parquet                 │
-└──────────────────────┼──────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│              DATA WAREHOUSE — PostgreSQL  (Star Schema)             │
-│                                                                     │
-│   dim_category ◄──── fact_product_listing ────► dim_seller         │
-│                             │                                       │
-│                        dim_product                                  │
-│                                                                     │
-│   Schema: dw  │  Batch upserts  │  ON CONFLICT DO NOTHING / UPDATE │
-└──────────────────────┼──────────────────────────────────────────────┘
-                        │
-                        ▼
-┌─────────────────────────────────────────────────────────────────────┐
-│                      ANALYTICS LAYER                                │
-│   8 SQL queries → Power BI / Tableau dashboards                     │
-│   KPIs: Revenue Potential │ Avg Rating │ Discount Effectiveness     │
-│         Seller Performance │ Price Segmentation │ Listing Quality   │
-└─────────────────────────────────────────────────────────────────────┘
-
-ORCHESTRATION: Apache Airflow DAG (hourly schedule)
-  start → ingest_raw_data → transform_data → load_warehouse
-        → run_analytics_check → end
-```
+</div>
 
 ---
 
-## Project Structure
+## 📌 Project Overview
+
+This project simulates a **real-world data engineering pipeline** for an Indian e-commerce platform. It covers the full data lifecycle — from raw ingestion to business-ready analytics — following modern **Data Lakehouse** architecture principles.
+
+| Dataset | 1,000 Products | 97 Categories | 24 Columns |
+|---|---|---|---|
+| Avg Rating | 3.62 / 5 | Avg Discount | 53.8% |
+| Revenue Potential | INR 17,06,096 | Known Sellers | 699 |
+
+---
+
+## 🏗️ Architecture
 
 ```
-ecommerce_pipeline/
-├── config/
+┌─────────────────────────────────────────────────────────────┐
+│                        DATA SOURCE                          │
+│              Combined_dataset.csv (E-Commerce)              │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│              INGESTION LAYER  (producer.py)                 │
+│   Splits CSV into 50-row batches → simulates streaming      │
+│   Optional: Apache Kafka integration ready                  │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│           RAW DATA LAKE  (Immutable Parquet)                │
+│   data/raw/YYYY/MM/DD/HH/batch_NNNN.parquet                │
+│   Partitioned by ingest hour — append-only                  │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│          PROCESSING LAYER  (transform.py)                   │
+│   ✓ Schema enforcement & type casting                       │
+│   ✓ Price cleaning  (₹3,995.00 → 3995.0)                  │
+│   ✓ Missing value strategy                                  │
+│   ✓ Feature Engineering (9 new columns)                     │
+│   ✓ Deduplication & validation                              │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│        DATA WAREHOUSE — SQLite  (Star Schema)               │
+│                                                             │
+│   dim_category ◄── fact_product_listing ──► dim_seller      │
+│                           │                                 │
+│                      dim_product                            │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│            ANALYTICS LAYER  (analytics.ipynb)               │
+│   6 Business Charts | KPI Dashboard | SQL Insights          │
+└─────────────────────────────────────────────────────────────┘
+
+         ORCHESTRATION: Apache Airflow DAG (hourly)
+         start → ingest → transform → load → quality_check → end
+```
+
+---
+
+## 📁 Project Structure
+
+```
+ecommerce-data-pipeline/
+├── 📂 config/
 │   ├── config.yaml          # All pipeline parameters
 │   └── settings.py          # Config loader + logger factory
-├── dags/
-│   └── ecommerce_pipeline_dag.py   # Airflow DAG
-├── ingestion/
+├── 📂 ingestion/
 │   ├── producer.py          # Batch simulator / Kafka producer
 │   └── consumer.py          # Kafka consumer (optional)
-├── processing/
+├── 📂 processing/
 │   └── transform.py         # Full transformation pipeline
-├── warehouse/
-│   └── loader.py            # PostgreSQL Star Schema loader
-├── analytics/
-│   └── analytics_queries.sql   # BI queries + dashboard blueprint
-├── data/
-│   ├── source/              # Place Combined_dataset.csv here
-│   ├── raw/                 # Data lake (auto-created)
-│   └── processed/           # Cleaned Parquet (auto-created)
-├── logs/                    # Rotating log files (auto-created)
-├── requirements.txt
-├── .env.example
-└── README.md
+├── 📂 warehouse/
+│   └── loader.py            # SQLite Star Schema loader
+├── 📂 data/
+│   ├── raw/                 # Data lake (Parquet partitions)
+│   └── processed/           # Cleaned Parquet
+├── 📊 analytics.ipynb       # Business insights & charts
+├── 📄 analytics_queries.sql # BI SQL queries
+├── 📄 requirements.txt
+└── 📄 README.md
 ```
 
 ---
 
-## Quick Start
+## ⚙️ Feature Engineering
 
-### 1. Environment setup
+| New Column | Description |
+|---|---|
+| `discount_amount` | initial_price - final_price |
+| `is_discounted` | Boolean — any discount applied |
+| `price_bucket` | budget / mid_range / premium / luxury |
+| `ratings_tier` | excellent / good / average / poor |
+| `has_seller` | Boolean — known seller |
+| `has_variations` | Boolean — product has variants |
+| `category_slug` | Normalized category name |
+| `title_word_count` | Listing completeness proxy |
+| `rating_x_count` | Weighted popularity score |
+
+---
+
+## 📊 Analytics Insights
+
+### Price Segmentation
+| Tier | Products | % of Catalog |
+|---|---|---|
+| Budget (< ₹500) | 151 | 15.1% |
+| Mid-Range (₹500–₹2K) | 592 | 59.2% |
+| Premium (₹2K–₹5K) | 217 | 21.7% |
+| Luxury (> ₹5K) | 40 | 4.0% |
+
+### Rating Quality
+| Tier | Products |
+|---|---|
+| Excellent (≥ 4.5★) | 165 |
+| Good (4.0–4.4★) | 450 |
+| Average (3.0–3.9★) | 247 |
+| Poor (< 3.0★) | 138 |
+
+---
+
+## 🚀 Quick Start
+
+### 1. Clone & Setup
 ```bash
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
+git clone https://github.com/Ali632-del/ecommerce-data-pipeline.git
+cd ecommerce-data-pipeline
 
-cp .env.example .env               # Fill in DB_PASSWORD
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+pip install -r requirements.txt
 ```
 
-### 2. Place source data
+### 2. Place Source Data
 ```bash
 mkdir -p data/source
-cp /path/to/Combined_dataset.csv data/source/
+# Copy Combined_dataset.csv into data/source/
 ```
 
-### 3. Run pipeline manually (no Airflow)
+### 3. Run the Pipeline
 ```bash
-# Ingest — writes raw Parquet to data/raw/
-python ingestion/producer.py
-
-# Transform — writes cleaned Parquet to data/processed/
-python processing/transform.py
-
-# Load — pushes to PostgreSQL
-python warehouse/loader.py
+python ingestion/producer.py     # Ingest → Data Lake
+python processing/transform.py   # Transform → Clean Data
+python warehouse/loader.py       # Load → Data Warehouse
 ```
 
-### 4. Run with Airflow
+### 4. Explore Analytics
 ```bash
-export AIRFLOW_HOME=~/airflow
-airflow db init
-airflow users create --role Admin --username admin \
-    --firstname Data --lastname Engineer \
-    --email admin@example.com --password admin
-
-# Copy DAG
-cp dags/ecommerce_pipeline_dag.py ~/airflow/dags/
-
-airflow webserver --port 8080 &
-airflow scheduler &
-# Open http://localhost:8080 → trigger ecommerce_pipeline DAG
-```
-
-### 5. PostgreSQL setup
-```sql
-CREATE DATABASE ecommerce_dw;
-CREATE USER pipeline_user WITH PASSWORD 'your_password';
-GRANT ALL PRIVILEGES ON DATABASE ecommerce_dw TO pipeline_user;
--- Tables are created automatically by loader.py
+jupyter notebook analytics.ipynb
 ```
 
 ---
 
-## Design Decisions
+## 🛠️ Tech Stack
 
-| Decision | Choice | Justification |
-|---|---|---|
-| Processing engine | **Pandas** | Dataset is 1K rows; Pandas is zero-config and faster to prototype. PySpark upgrade is 5-line change. |
-| Storage format | **Parquet** | Columnar, compressed, schema-preserving — industry standard for data lakes. |
-| Warehouse | **PostgreSQL** | Free, ACID, supported by every BI tool. Snowflake/BigQuery are drop-in replacements via SQLAlchemy. |
-| Orchestration | **Airflow** | Industry standard; DAG-as-code makes pipelines reviewable and testable. |
-| Data Lake partitioning | **Hourly** | Balances file count vs query pruning. Daily is fine for portfolio. |
-| Missing seller | **"Unknown Seller"** | Keeps FK integrity in dim_seller; filterable in analytics. |
-
----
-
-## Kafka Integration (Optional)
-
-To enable real streaming:
-
-1. Start Kafka: `docker compose up kafka zookeeper`
-2. In `ingestion/producer.py`, uncomment the `KafkaProducer` block
-3. In `ingestion/consumer.py`, uncomment the `KafkaConsumer` loop
-4. Run producer and consumer in separate terminals
-
-The rest of the pipeline (transform → load) is unchanged.
-
----
-
-## KPIs & Metrics
-
-| KPI | SQL Reference |
+| Layer | Technology |
 |---|---|
-| Total SKUs & revenue potential | Query 1 |
-| Category revenue ranking | Query 2 |
-| Price tier distribution | Query 3 |
-| Top sellers by catalog size | Query 4 |
-| Rating quality funnel | Query 5 |
-| Popularity-weighted top products | Query 6 |
-| Discount ↔ Rating correlation | Query 7 |
-| Listing completeness vs performance | Query 8 |
+| Language | Python 3.14 |
+| Data Processing | Pandas, NumPy |
+| Storage Format | Apache Parquet |
+| Data Warehouse | SQLite (Star Schema) |
+| Orchestration | Apache Airflow |
+| Analytics | Jupyter, Matplotlib, Seaborn |
+| Streaming (Optional) | Apache Kafka |
+| Version Control | Git / GitHub |
+
+---
+
+## 🔮 Future Enhancements
+
+- [ ] Migrate warehouse to PostgreSQL / Snowflake
+- [ ] Enable Apache Kafka for true real-time streaming
+- [ ] Add Great Expectations for data quality validation
+- [ ] Build Power BI / Tableau dashboard
+- [ ] Containerize with Docker Compose
+- [ ] Deploy pipeline to AWS (S3 + Glue + Redshift)
+
+---
+
+## 👨‍💻 Author
+
+**Ali Hamdy Rizq**  
+Data Engineer | Python | SQL | ETL Pipelines  
+🔗 [GitHub](https://github.com/Ali632-del)
+
+---
+
+<div align="center">
+⭐ If you found this project useful, please give it a star!
+</div>
