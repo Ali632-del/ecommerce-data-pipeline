@@ -1,0 +1,37 @@
+# ============================================================
+# Requirements — Python 3.14 compatible
+# ============================================================
+# Python 3.14 is pre-release (alpha/beta). The packages below
+# are either pure-Python or have 3.14 wheels on PyPI.
+#
+# NOT compatible yet with 3.14:
+#   - apache-airflow      (requires Python <=3.12)
+#   - psycopg2-binary     (C extension, no 3.14 wheel yet)
+#   - kafka-python        (not tested on 3.14)
+#   - pyspark             (not tested on 3.14)
+#
+# Workarounds:
+#   - Airflow   → شغّل الـ scripts يدوياً (producer → transform → loader)
+#   - psycopg2  → اتعوّض بـ pg8000 (pure Python, نفس الـ API عبر SQLAlchemy)
+# ============================================================
+ 
+# ── Core data stack ──────────────────────────────────────────
+pandas>=2.2.3
+numpy>=2.2.0
+pyarrow>=18.0.0
+ 
+# ── Config & environment ─────────────────────────────────────
+pyyaml>=6.0.2
+python-dotenv>=1.0.1
+ 
+# ── Database driver (pg8000 بدل psycopg2 على Python 3.14) ───
+pg8000>=1.31.2
+sqlalchemy>=2.0.36
+ 
+# ── Parquet fallback (لو pyarrow مش عنده wheel لـ 3.14) ─────
+fastparquet>=2024.11.0
+ 
+# ── Dev / testing ────────────────────────────────────────────
+pytest>=8.3.4
+black>=24.10.0
+ruff>=0.8.0
