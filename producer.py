@@ -1,23 +1,3 @@
-"""
-producer.py
------------
-Simulates real-time data ingestion by reading the source CSV in
-configurable batches and writing each batch as an immutable Parquet
-partition in the Data Lake.
-
-Data Lake layout:
-  data/raw/<YYYY>/<MM>/<DD>/<HH>/batch_<n>.parquet
-
-Run:
-  python ingestion/producer.py [--source path/to/file.csv]
-
-Kafka integration note
-----------------------
-Uncomment the KafkaProducer block to forward each row as a JSON
-message to the topic defined in config.yaml.  The consumer
-(ingestion/consumer.py) then writes the Parquet files instead.
-"""
-
 import argparse
 import json
 import time
@@ -33,16 +13,6 @@ from config.settings import get_config, get_logger
 
 logger = get_logger("producer")
 cfg    = get_config()
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# Optional Kafka producer (uncomment to enable)
-# ─────────────────────────────────────────────────────────────────────────────
-# from kafka import KafkaProducer
-# kafka_producer = KafkaProducer(
-#     bootstrap_servers=cfg["kafka"]["bootstrap_servers"],
-#     value_serializer=lambda v: json.dumps(v).encode("utf-8"),
-# )
 
 
 def get_partition_path(base: Path, ts: datetime, batch_num: int) -> Path:

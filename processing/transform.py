@@ -1,34 +1,3 @@
-"""
-transform.py
-------------
-Reads raw Parquet files from the data lake, applies a production-grade
-transformation pipeline, and writes clean data to data/processed/.
-
-Transformation steps
---------------------
-1. Schema enforcement & type casting
-2. Price cleaning  (strip currency symbols, commas → float)
-3. Missing-value strategy (per-column, config-driven)
-4. Feature engineering  (discount_amount, price_bucket, is_discounted,
-                          ratings_tier, has_seller, category_slug, …)
-5. Deduplication
-6. Output partitioned Parquet (one file per source partition)
-
-Design decision — Pandas vs PySpark
--------------------------------------
-Pandas is chosen here for portfolio clarity and zero-dependency startup.
-The 1,000-row dataset fits comfortably in memory.  The PySpark upgrade
-path requires changing ~5 lines (DataFrame API is nearly identical):
-
-    from pyspark.sql import SparkSession
-    spark = SparkSession.builder.appName("ecommerce").getOrCreate()
-    df    = spark.read.parquet(raw_dir)           # lazy, distributed
-    df    = df.withColumn(...)                     # same logic
-    df.write.parquet(out_dir, mode="overwrite")
-
-Switch when: dataset > 10 GB or you need distributed joins.
-"""
-
 import re
 from pathlib import Path
 

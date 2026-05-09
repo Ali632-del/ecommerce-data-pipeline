@@ -1,0 +1,63 @@
+
+# =============================================================
+# E-Commerce Pipeline Configuration
+# =============================================================
+
+project:
+  name: ecommerce_data_pipeline
+  version: "1.0.0"
+  environment: development   # development | staging | production
+
+# ----- Paths -----
+paths:
+  raw_data_lake: data/raw
+  processed_data: data/processed
+  source_dataset: data/source/Combined_dataset.csv
+  logs: logs
+
+# ----- Ingestion -----
+ingestion:
+  batch_size: 50             # rows per simulated batch
+  batch_interval_seconds: 2  # delay between batches
+  partition_format: "%Y/%m/%d/%H"   # hourly partitioning
+
+# ----- Processing -----
+processing:
+  engine: pandas             # pandas | pyspark
+  final_price_currency: INR
+  discount_fill_strategy: median
+  rating_min: 0.0
+  rating_max: 5.0
+
+# ----- Database (PostgreSQL) -----
+database:
+  host: localhost
+  port: 5432
+  name: ecommerce_dw
+  user: pipeline_user
+  password: "${DB_PASSWORD}"   # injected from .env
+  schema: dw
+  batch_insert_size: 200
+
+# ----- Kafka (optional) -----
+kafka:
+  bootstrap_servers: localhost:9092
+  topic: ecommerce_raw_events
+  group_id: ecommerce_consumers
+  auto_offset_reset: earliest
+
+# ----- Airflow -----
+airflow:
+  dag_id: ecommerce_pipeline
+  schedule_interval: "0 * * * *"   # every hour
+  start_date: "2024-01-01"
+  retries: 2
+  retry_delay_minutes: 5
+
+# ----- Logging -----
+logging:
+  level: INFO
+  format: "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+  file: logs/pipeline.log
+  max_bytes: 10485760   # 10MB
+  backup_count: 5
